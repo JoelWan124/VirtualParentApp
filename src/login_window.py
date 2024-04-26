@@ -3,7 +3,7 @@ from PyQt5.QtCore import pyqtSignal
 import database  # Assuming a module for database operations
 
 class LoginWindow(QWidget):
-    login_success = pyqtSignal()
+    login_success = pyqtSignal(int)  # This signal now expects an integer user ID
     register_request = pyqtSignal()
 
     def __init__(self):
@@ -35,9 +35,9 @@ class LoginWindow(QWidget):
         self.setLayout(layout)
 
     def check_credentials(self):
-        if database.check_user_credentials(self.username.text(), self.password.text()):
-            self.login_success.emit()
+        user_id = database.check_user_credentials(self.username.text(), self.password.text())
+        if user_id:
+            self.login_success.emit(user_id)  # Emit user_id upon successful login
         else:
             # You might want to show an error message here
             print("Login failed")
-
