@@ -21,6 +21,7 @@ class MainApp(QMainWindow):
         self.toothbrushing_room = None
         self.init_ui()
         self.init_navbar()
+
         
 
     def init_ui(self):
@@ -58,8 +59,13 @@ class MainApp(QMainWindow):
 
     def user_logged_in(self, user_id):
         self.current_user_id = user_id
+        # Set up the user-specific windows here with the current_user_id
+        self.dashboard = Dashboard(user_id=self.current_user_id)
+        self.settings_window = SettingsWindow(user_id=self.current_user_id)
+        self.settings_window.logout_requested.connect(self.logout)
         self.show_dashboard()
         self.navbar.show()
+
 
 
 
@@ -92,8 +98,10 @@ class MainApp(QMainWindow):
 
 
     def show_settings(self):
-        self.settings_window = SettingsWindow(user_id=self.current_user_id)
+        self.settings_window = SettingsWindow(user_id=self.current_user_id)  # Create a new settings window
+        self.settings_window.logout_requested.connect(self.logout)
         self.setCentralWidget(self.settings_window)
+
 
     def show_history(self):
         self.history_window = HistoryWindow(user_id=self.current_user_id)
@@ -105,30 +113,28 @@ class MainApp(QMainWindow):
 
 
     def logout(self):
+        print("Logging out...")  # Debug print to confirm logout is called
+        
+        # Clear the central widget
+        current_central_widget = self.takeCentralWidget()
+        if current_central_widget is not None:
+            current_central_widget.deleteLater()
+
+        # Reset the user ID and any user-specific state
         self.current_user_id = None
-        # Dispose of user-specific windows
         self.dispose_user_windows()
+
+        # Show the login screen
         self.show_login()
 
     def dispose_user_windows(self):
-        # Properly dispose of windows to free up resources
-        if self.dashboard:
-            self.dashboard.deleteLater()
-        if self.achievements_window:
-            self.achievements_window.deleteLater()
-        if self.settings_window:
-            self.settings_window.deleteLater()
-        if self.history_window:
-            self.history_window.deleteLater()
-        if self.toothbrushing_room:
-            self.toothbrushing_room.deleteLater()
-
-        # Reset references to None
         self.dashboard = None
         self.achievements_window = None
         self.settings_window = None
         self.history_window = None
         self.toothbrushing_room = None
+
+
 
 def main():
     app = QApplication(sys.argv)

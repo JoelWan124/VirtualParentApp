@@ -1,17 +1,17 @@
 # settings.py
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QCheckBox, QTimeEdit
 from PyQt5.QtCore import QTime, pyqtSignal
-
 from database import get_user_settings, update_user_settings
 
 class SettingsWindow(QWidget):
     history_requested = pyqtSignal()
     logout_requested = pyqtSignal()
 
-    def __init__(self, user_id=None):  # Accept an optional user_id argument
+    def __init__(self, user_id=None):
         super().__init__()
-        self.user_id = user_id  # Store the user_id
+        self.user_id = user_id
         self.init_ui()
+        self.populate_settings()
 
     def init_ui(self):
         self.setWindowTitle("Settings")
@@ -48,13 +48,15 @@ class SettingsWindow(QWidget):
         self.setLayout(layout)
 
     def populate_settings(self):
-        user_id = self.get_current_user_id()  # Implement this method
-        settings = get_user_settings(user_id)
-        if settings:
-            notifications_enabled, day_time, night_time = settings
-            self.notifications_checkbox.setChecked(notifications_enabled)
-            self.day_time_edit.setTime(QTime.fromString(day_time, "HH:mm"))
-            self.night_time_edit.setTime(QTime.fromString(night_time, "HH:mm"))
+        # Check if we have a user_id before attempting to populate settings
+        if self.user_id:
+            settings = get_user_settings(self.user_id)
+            if settings:
+                # Assuming settings is a tuple like (notifications_enabled, day_time, night_time)
+                notifications_enabled, day_time, night_time = settings
+                self.notifications_checkbox.setChecked(notifications_enabled == 1)
+                self.day_time_edit.setTime(QTime.fromString(day_time, "HH:mm"))
+                self.night_time_edit.setTime(QTime.fromString(night_time, "HH:mm"))
 
     def update_settings(self):
         user_id = self.get_current_user_id()  # Implement this method
