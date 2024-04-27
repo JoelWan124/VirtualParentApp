@@ -1,8 +1,10 @@
 import os
+import sqlite3
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import QSize
 from PyQt5.QtCore import Qt
+import database
 
 
 class AchievementBadge(QWidget):
@@ -30,17 +32,26 @@ class AchievementBadge(QWidget):
         self.setLayout(layout)
 
     def update_icon(self):
-        pixmap = QPixmap(self.unlocked_image_path if self.unlocked else self.locked_image_path)
-        self.badge_icon.setPixmap(pixmap.scaled(120, 120, transformMode=Qt.SmoothTransformation))
+        # Check if the image exists using the correct relative path
+        if os.path.exists(self.unlocked_image_path if self.unlocked else self.locked_image_path):
+            pixmap = QPixmap(self.unlocked_image_path if self.unlocked else self.locked_image_path)
+            self.badge_icon.setPixmap(pixmap.scaled(120, 120, transformMode=Qt.SmoothTransformation))
+        else:
+            print(f"Image not found: {self.unlocked_image_path if self.unlocked else self.locked_image_path}")
+
 
     def unlock(self):
         self.unlocked = True
         self.update_icon()
 
 class AchievementsWindow(QWidget):
-    def __init__(self):
+    def __init__(self, user_id=None):
         super().__init__()
+        self.user_id = user_id
+        self.badges = []
         self.init_ui()
+        if self.user_id is not None:
+            self.load_achievements_for_user(self.user_id)
 
     def init_ui(self):
         self.setWindowTitle("Achievements")
@@ -90,22 +101,39 @@ class AchievementsWindow(QWidget):
 
         self.setLayout(layout)
 
-# Example to demonstrate the unlocking process, which you can trigger based on actual events
-#Triggered by the toothbrushing activities
-def simulate_unlocking_achievements(window):
-    # Assuming this function is called when conditions are met
-    window.badges[0].unlock()  # Unlock the first badge
 
-if __name__ == "__main__":
-    # Check if the image file exists before starting the application
-    image_path = '../resources/images/badges/locked.png'
-    if not os.path.isfile(image_path):
-        print(f"Image file not found: {image_path}")
-    else:
-        print(f"Image file exists: {image_path}")
-    import sys
-    app = QApplication(sys.argv)
-    ex = AchievementsWindow()
-    ex.show()
-    simulate_unlocking_achievements(ex)  # Simulate an unlock for demonstration
-    sys.exit(app.exec_())
+
+    def load_achievements_for_user(self, user_id):
+        # Connect to the database and check conditions for each badge
+        conn = database.create_connection()
+        if conn:
+            try:
+                # Badge 1: Long Way to Go - Completed the room at least once
+                cursor = conn.cursor()
+                cursor.execute("SELECT status FROM userRooms WHERE user_id = ? LIMIT 1", (user_id,))
+                if cursor.fetchone():
+                    self.badges[0].unlock()
+
+                # Badge 2: BAHAHAHAHAHA - Completed the room with 3 stars for the first time
+                cursor.execute("SELECT starEarned FROM userRooms WHERE user_id = ? AND starEarned = 3 LIMIT 1", (user_id,))
+                if cursor.fetchone():
+                    self.badges[1].unlock()
+
+                # Badge 3: WoMp WOmp :( - Fail to complete the room
+                cursor.execute("SELECT status FROM userRooms WHERE user_id = ? AND status = 0 LIMIT 1", (user_id,))
+                if cursor.fetchone():
+                    self.badges[2].unlock()
+
+            except sqlite3.Error as e:
+                print(f"An error occurred while retrieving achievements: {e}")
+            finally:
+                conn.close()
+
+        # Checking the room completion status for a specific room
+        room_completion_status = database.get_room_completion_status(user_id, "ToothbrushingRoom")  # Replace with actual room name
+        if room_completion_status is not None and room_completion_status:
+            # If the room is completed (status is True), unlock the related badge
+            self.badges[0].unlock()  # Assuming this badge is related to room completion
+
+    
+        

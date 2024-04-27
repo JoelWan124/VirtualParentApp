@@ -14,8 +14,14 @@ class MainApp(QMainWindow):
         self.current_user_id = None  # Initialize with no user
         self.setWindowTitle('Virtual Parent Application')
         self.setGeometry(100, 100, 800, 600)
+        self.dashboard = None
+        self.achievements_window = None
+        self.settings_window = None
+        self.history_window = None
+        self.toothbrushing_room = None
         self.init_ui()
         self.init_navbar()
+        
 
     def init_ui(self):
         self.login_window = self.create_login_window()
@@ -52,55 +58,77 @@ class MainApp(QMainWindow):
 
     def user_logged_in(self, user_id):
         self.current_user_id = user_id
-        self.dashboard = Dashboard(user_id=user_id)  # Pass user_id to the dashboard
         self.show_dashboard()
         self.navbar.show()
 
+
+
+#####Before Login (User)
     def show_login(self):
         self.current_user_id = None
         self.login_window = self.create_login_window()  # Recreate the login window
         self.setCentralWidget(self.login_window)
         self.navbar.hide()
 
-    def show_dashboard(self):
-        if not hasattr(self, 'dashboard') or self.dashboard.user_id != self.current_user_id:
-            self.dashboard = Dashboard(user_id=self.current_user_id)  # Pass user_id to the dashboard
-        self.setCentralWidget(self.dashboard)
-
     def show_registration(self):
         if not hasattr(self, 'registration_window'):
             self.registration_window = self.create_registration_window()
         self.setCentralWidget(self.registration_window)
 
+
+#####After login (Member)
+    def show_dashboard(self):
+        # Create a new dashboard instance with the current user's ID.
+        self.dashboard = Dashboard(user_id=self.current_user_id)
+        # Set the new dashboard instance as the central widget.
+        self.setCentralWidget(self.dashboard)
+
+
+
     def show_achievements(self):
-        if not hasattr(self, 'achievements_window') or self.achievements_window.user_id != self.current_user_id:
-            self.achievements_window = AchievementsWindow(user_id=self.current_user_id)
+        # Create a new instance of AchievementsWindow
+        self.achievements_window = AchievementsWindow(user_id=self.current_user_id)
         self.setCentralWidget(self.achievements_window)
 
+
     def show_settings(self):
-        if not hasattr(self, 'settings_window') or self.settings_window.user_id != self.current_user_id:
-            self.settings_window = SettingsWindow(user_id=self.current_user_id)
+        self.settings_window = SettingsWindow(user_id=self.current_user_id)
         self.setCentralWidget(self.settings_window)
 
     def show_history(self):
-        if not hasattr(self, 'history_window') or self.history_window.user_id != self.current_user_id:
-            self.history_window = HistoryWindow(user_id=self.current_user_id)
+        self.history_window = HistoryWindow(user_id=self.current_user_id)
         self.setCentralWidget(self.history_window)
 
     def show_toothbrushing_room(self):
-        if not hasattr(self, 'toothbrushing_room') or self.toothbrushing_room.user_id != self.current_user_id:
-            self.toothbrushing_room = ToothbrushingRoom(user_id=self.current_user_id)
+        self.toothbrushing_room = ToothbrushingRoom(user_id=self.current_user_id)
         self.setCentralWidget(self.toothbrushing_room)
+
 
     def logout(self):
         self.current_user_id = None
-        # Clear all user-specific windows
+        # Dispose of user-specific windows
+        self.dispose_user_windows()
+        self.show_login()
+
+    def dispose_user_windows(self):
+        # Properly dispose of windows to free up resources
+        if self.dashboard:
+            self.dashboard.deleteLater()
+        if self.achievements_window:
+            self.achievements_window.deleteLater()
+        if self.settings_window:
+            self.settings_window.deleteLater()
+        if self.history_window:
+            self.history_window.deleteLater()
+        if self.toothbrushing_room:
+            self.toothbrushing_room.deleteLater()
+
+        # Reset references to None
         self.dashboard = None
         self.achievements_window = None
         self.settings_window = None
         self.history_window = None
         self.toothbrushing_room = None
-        self.show_login()
 
 def main():
     app = QApplication(sys.argv)
