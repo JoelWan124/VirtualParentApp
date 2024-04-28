@@ -7,6 +7,9 @@ from toothbrushing_room import ToothbrushingRoom
 from achievements import AchievementsWindow
 from settings import SettingsWindow
 from history import HistoryWindow
+from PyQt5.QtCore import QThread
+from services import start_notification_scheduler
+
 
 class MainApp(QMainWindow):
     def __init__(self):
@@ -28,6 +31,7 @@ class MainApp(QMainWindow):
         self.login_window = self.create_login_window()
         self.registration_window = self.create_registration_window()
         self.setCentralWidget(self.login_window)
+
 
     def init_navbar(self):
         self.navbar = QToolBar("Navigation")
@@ -66,13 +70,18 @@ class MainApp(QMainWindow):
         self.show_dashboard()
         self.navbar.show()
 
+        # Start the notification scheduler in a new thread
+        self.notification_thread = QThread()
+        self.notification_thread.started.connect(lambda: start_notification_scheduler(self.current_user_id))
+        self.notification_thread.start()
+
 
 
 
 #####Before Login (User)
     def show_login(self):
         self.current_user_id = None
-        self.login_window = self.create_login_window()  # Recreate the login window
+        self.login_window = self.create_login_window()
         self.setCentralWidget(self.login_window)
         self.navbar.hide()
 
@@ -84,21 +93,18 @@ class MainApp(QMainWindow):
 
 #####After login (Member)
     def show_dashboard(self):
-        # Create a new dashboard instance with the current user's ID.
         self.dashboard = Dashboard(user_id=self.current_user_id)
-        # Set the new dashboard instance as the central widget.
         self.setCentralWidget(self.dashboard)
 
 
 
     def show_achievements(self):
-        # Create a new instance of AchievementsWindow
         self.achievements_window = AchievementsWindow(user_id=self.current_user_id)
         self.setCentralWidget(self.achievements_window)
 
 
     def show_settings(self):
-        self.settings_window = SettingsWindow(user_id=self.current_user_id)  # Create a new settings window
+        self.settings_window = SettingsWindow(user_id=self.current_user_id)
         self.settings_window.logout_requested.connect(self.logout)
         self.setCentralWidget(self.settings_window)
 
@@ -112,6 +118,7 @@ class MainApp(QMainWindow):
         self.setCentralWidget(self.toothbrushing_room)
 
 
+
     def logout(self):
         print("Logging out...")  # Debug print to confirm logout is called
         
@@ -120,11 +127,14 @@ class MainApp(QMainWindow):
         if current_central_widget is not None:
             current_central_widget.deleteLater()
 
+         # Stop the notification scheduler
+        if hasattr(self, 'notification_thread'):
+            self.notification_thread.quit()
+            self.notification_thread.wait()
+
         # Reset the user ID and any user-specific state
         self.current_user_id = None
         self.dispose_user_windows()
-
-        # Show the login screen
         self.show_login()
 
     def dispose_user_windows(self):

@@ -1,5 +1,5 @@
 # history.py
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHeaderView
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHeaderView
 
 class HistoryWindow(QWidget):
     def __init__(self, user_id):
@@ -34,5 +34,19 @@ class HistoryWindow(QWidget):
         self.history_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     def get_user_history_from_database(self):
-        # Placeholder function - replace with actual database call
-        return [("2024-04-26", "Toothbrushing", 3), ("2024-04-25", "Toothbrushing", 2)]
+        # Simulated test data
+        simulated_history = [
+            ("2024-04-25", "Toothbrushing(Day)", 3),
+            ("2024-04-25", "Toothbrushing(Night)", 2),
+            ("2024-04-24", "Energy Saving", 1),
+            ("2024-04-23", "Healthy Eating", 3),
+            ("2024-04-22", "Mindfulness", 2),
+        ]
+        return simulated_history
+
+if __name__ == "__main__":
+    import sys
+    app = QApplication(sys.argv)
+    history_window = HistoryWindow(user_id=1)
+    history_window.show()
+    sys.exit(app.exec_())

@@ -34,6 +34,6 @@ class RegistrationWindow(QWidget):
         if database.add_new_user(self.username.text(), self.password.text()):
             self.registration_success.emit()
         else:
-            # Handle registration failure (e.g., username already exists)
+            # Handle registration failure if username already exists
             print("Registration failed")
 

@@ -57,7 +57,6 @@ class AchievementsWindow(QWidget):
         self.setWindowTitle("Achievements")
         layout = QVBoxLayout()
 
-        # Example achievements setup
         self.badges = [
             AchievementBadge(
                 "Long Way to Go", 
@@ -130,10 +129,9 @@ class AchievementsWindow(QWidget):
                 conn.close()
 
         # Checking the room completion status for a specific room
-        room_completion_status = database.get_room_completion_status(user_id, "ToothbrushingRoom")  # Replace with actual room name
+        room_completion_status = database.get_room_completion_status(user_id, "ToothbrushingRoom")
         if room_completion_status is not None and room_completion_status:
-            # If the room is completed (status is True), unlock the related badge
-            self.badges[0].unlock()  # Assuming this badge is related to room completion
+            self.badges[0].unlock()
 
     
         
