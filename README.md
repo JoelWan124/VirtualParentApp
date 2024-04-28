@@ -1,4 +1,5 @@
-# VirtualParentApp (Final Year project) -by Wan Ching Yin Joel(210351354)
+# VirtualParentApp (Final Year project) 
+-by Wan Ching Yin Joel(210351354)
 
 The Virtual Parent Application is designed to assist children in foster a daily hygiene routines with interactive guides and notifications. This application uses PyQt5 for the GUI and SQLite for data management.
 
@@ -41,7 +42,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-1. Navigate the to the /src folder
+1. Navigate the to the /src folder:
 python main.py
 
 
