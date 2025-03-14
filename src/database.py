@@ -3,6 +3,7 @@ import hashlib
 
 DATABASE_NAME = "virtual_parent.db"
 
+#hihihiihihi
 def create_connection():
     """Create a database connection to the SQLite database."""
     conn = None
